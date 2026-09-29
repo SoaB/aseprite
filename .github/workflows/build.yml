@@ -24,9 +24,6 @@ jobs:
       with:
         key: ${{ matrix.os }}-${{ matrix.enable_ui }}
 
-    # ninja 現在 GitHub runner 已經內建，不需要再裝了（原本那個 action 也 archived 了）
-    # - uses: seanmiddleditch/gha-setup-ninja@v6
-
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
 
@@ -39,6 +36,12 @@ jobs:
             libx11-dev libxcursor-dev libxi-dev
         fi
 
+    - name: Download Skia
+      shell: bash
+      run: |
+        curl -L -o skia.zip https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-Windows-Release-x64.zip
+        7z x skia.zip -oskia
+
     - name: Generating Makefiles
       shell: bash
       run: |
@@ -47,8 +50,6 @@ jobs:
         else
           export enable_ccache=on
         fi
-        curl -L https://github.com/blueloveTH/aseprite/releases/download/v0.01/skia.zip --output skia.zip
-        7z x skia.zip
         cmake -S . -B build -G Ninja \
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
           -DENABLE_UI=${{ matrix.enable_ui }} \
