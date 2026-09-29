@@ -14,17 +14,22 @@ jobs:
             build_type: Release
             enable_ui: on
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1
       if: runner.os == 'Linux'
       with:
         key: ${{ matrix.os }}-${{ matrix.enable_ui }}
-    - uses: seanmiddleditch/gha-setup-ninja@master
+
+    # ninja 現在 GitHub runner 已經內建，不需要再裝了（原本那個 action 也 archived 了）
+    # - uses: seanmiddleditch/gha-setup-ninja@v6
+
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
+
     - name: Install Dependencies
       shell: bash
       run: |
@@ -33,6 +38,7 @@ jobs:
           sudo apt-get install -y \
             libx11-dev libxcursor-dev libxi-dev
         fi
+
     - name: Generating Makefiles
       shell: bash
       run: |
@@ -51,11 +57,13 @@ jobs:
           -DSKIA_DIR=./skia \
           -DSKIA_LIBRARY_DIR=./skia/out/Release-x64 \
           -DSKIA_LIBRARY=./skia/out/Release-x64/skia.lib
+
     - name: Compiling
       shell: bash
       run: |
         cd build && ninja
-    - uses: actions/upload-artifact@v3
+
+    - uses: actions/upload-artifact@v4
       with:
         name: aseprite
         path: |
